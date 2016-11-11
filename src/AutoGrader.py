@@ -453,29 +453,37 @@ class AutoGrader:
         f.close()
 
 
-    def _findFilesInDir(self, directory, extension=".py", foundFiles=[]):
-        """function that searches the specified 'directory' and for files
+    def _findFilesInDir(self, directory, extension=".py", foundFiles=None):
+        """function that searches the specified 'directory' for files
         with the supplied extention.  The function returns a list of these files or appends to the
         supplied foundFiles list."""
-        
+
+        #mutable default arguments in Python are evaluated once when the function is defined, not each time the function is called.
+        if foundFiles == None:
+            foundFiles = []
+            
         filenames = os.listdir(directory)
         for filename in filenames:
-            if filename[-len(extension):] == extension and filename[0:1] != '.':
+            #need to verify that the entity is a file (this avoids problems when directory names have file extensions)
+            if filename[-len(extension):] == extension and filename[0:1] != '.' and os.path.isfile(directory + '/' + filename):
                 foundFiles.append(directory + '/' + filename)
                 print ('===>' + filename)
         return foundFiles
 
 
-    def _findFiles(self, topLevelDirectory, extension=".py", foundFiles=[]):
+    def _findFiles(self, topLevelDirectory, extension=".py", foundFiles=None):
         """function that searches the supplied topLevelDirectory and all sub-directories for files
         with the supplied extention.  The function returns a list of these files or appends to the
         supplied foundFiles list."""
-        #foundFiles = []
+        
+        #mutable default arguments in Python are evaluated once when the function is defined, not each time the function is called.
+        if foundFiles == None:
+            foundFiles = []
         
         for dirpath, dirnames, filenames in os.walk(topLevelDirectory):
             for filename in filenames:
-                #if os.path.splitext(filename)[1] == extention:
-                if filename[-len(extension):] == extension and filename[0:1] != '.':
+                #need to verify that the entity is a file (this avoids problems when directory names have file extensions)
+                if filename[-len(extension):] == extension and filename[0:1] != '.' and os.path.isfile(dirpath+"/"+filename):
                     foundFiles.append(dirpath+"/"+filename)
                     #print dirpath+"/"+filename
         return foundFiles
@@ -493,7 +501,8 @@ class AutoGrader:
             #print 'dirpath= ' + dirpath
             for filename in filenames:
                 #check file extension and verify this is not a hidden file
-                if filename[-len(extension):] == extension and filename[0] != '.':
+                #also need to verify that the entity is a file (this avoids problems when directory names have file extensions)
+                if filename[-len(extension):] == extension and filename[0] != '.' and os.path.isfile(dirpath+"/"+filename):
                     #print 'filename = ' + dirpath +'/'+filename
                     if dirpath == topLevelDirectory:
                         tempFilesFound.append(dirpath+"/"+filename)
