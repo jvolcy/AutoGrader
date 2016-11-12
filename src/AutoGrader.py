@@ -24,10 +24,6 @@ AUTO_GRADER_VERSION = "0.94"
 0.93 - monolithic html output files now contain all JS and CSS content
 0.94 - javascript grade entry added
 
-To Do:  - limit the length of output files: create a function called head(file1, file2, maxLines)
-which appends the first maxLines of file1 to file2.  Send program output to file2, then append to file1.
-create a parameter called max output lines in AppAutoGrader for this purpose.
-
 """
 
 class AutoGrader:
@@ -254,10 +250,13 @@ class AutoGrader:
         tmpFile = outputFile.strip() + '.AB'
         self._removeFile(tmpFile)
 
+        #set the working directory to the directory of the source file
         if sourceFile == '':
             source = ' '
+            cwd = '.'
         else:
             source = ' "' + sourceFile + '"'
+            cwd = os.path.split(sourceFile)[0]
             
         if dataFile == '':
             _args = interpreter + source + ' >> "' + tmpFile + '" 2>&1'
@@ -268,7 +267,7 @@ class AutoGrader:
         #print ("Executing: " + _args)
         
         start_time = time.time()
-        p = subprocess.Popen(args=_args, shell=True)    #the pid returned appears to be the pid of the shell
+        p = subprocess.Popen(args=_args, shell=True, cwd=cwd)    #the pid returned appears to be the pid of the shell
         elapsed_time = time.time() - start_time
         
         while p.poll() == None and elapsed_time < maxRunTime:

@@ -21,7 +21,7 @@ from AutoGrader import AutoGrader
 import SpelmanLogo
 import json
 
-AUTO_GRADER_APP_VERSION = "0.98p"
+AUTO_GRADER_APP_VERSION = "0.98q"
 #requires AutoGrader V 0.94 or later
 
 
@@ -47,11 +47,19 @@ AUTO_GRADER_APP_VERSION = "0.98p"
 0.96 - monolithic html output files now contain all JS and CSS content
 0.97 - save preferences added
 0.98p - javascript grade entry added
+0.98q - working directory set to directory of source file
 
 To Do: - 
 #Need to provide an option for manual entry instead of test data (which won't work for a gussing game, for example)
 #Need to allow user to specify browers or use default
 #Need to read feedback file back into HTML page when available
+
+#Need to preserve files created by the program.  Here is a strategy:
+#1) When the program starts, make a list of all files in the program directory
+#2) Create a sub-directory for each program using the user's name
+#3) When the program ends, make a new list of all files in the proram directory
+#4) If this second list contains files not in the first list, move them to the sub-directory created in step 2
+#5) Do an 'rmdir' on the created directory.  If the directory is empty, it will be removed.  Otherwise, a 'directory not empty' error will be generated which can be ignored.
 
 """
 
