@@ -228,7 +228,7 @@ class AutoGrader:
 
 
          
-    def _shellExec(self, interpreter, sourceFile, dataFile, outputFile, maxRunTime, maxOutputLines):
+    def _shellExec(self, interpreter, sourceFile, dataFile, outputFile, maxRunTime, maxOutputLines, topLevelDirectory):
         """function to execute source code in a shell using a specified interpreter.
         interpreter = full path or name of script interpreter (examples: python, /usr/bin/python2.7, etc.)
         sourceFile = full path of the script to be executed
@@ -265,7 +265,10 @@ class AutoGrader:
 
                 
         #print ("Executing: " + _args)
-        
+
+        #make a note of all files currently in the working directory
+        initialFileList = os.listdir(cwd)
+
         start_time = time.time()
         p = subprocess.Popen(args=_args, shell=True, cwd=cwd)    #the pid returned appears to be the pid of the shell
         elapsed_time = time.time() - start_time
@@ -313,16 +316,45 @@ class AutoGrader:
         #Flank with '\n's to ensure the token is on a line by itself
         #f.write('\n' + AutoGrader.Const.PROG_OUTPUT_END_TOKEN + '\n')
         f.write('</font></pre>')
+
+
+        #make a note of all files currently in the working directory
+        finalFileList = os.listdir(cwd)
+        #create an output directory
+        outputDirectory = cwd + '/' + self._getStudentName(topLevelDirectory, sourceFile) + '_output'
+        print('\noutput directory = ', outputDirectory)
+        print (initialFileList)
+        print (finalFileList)
+        os.system('mkdir "' + outputDirectory + '"')
+        #move all new files to an output directory based on the student's name
+        for file in finalFileList:
+            if file not in initialFileList:
+                os.system('mv -f "' + cwd + '/' + file + '" "' + outputDirectory + '"')
+                print('moving file ', file)
+
+        #attempt to remove the output directory (will only succeed if the directory is empty
+        os.system('rmdir "' + outputDirectory + '"')
+
         f.close()
             
         return elapsed_time
+
+    def _getStudentName(self, sourceDirectory, sourceFile):
+        '''function that attempts to extract the student name from the Moodle-generated student submission file'''
+        #sourceDirectory is the top level directory.
+        filename = sourceFile.split(sourceDirectory)[1]
+        if '_' not in filename:
+            return 'Anonymous'
+        return filename.split('_')[0].strip('/')
+
 
     def _gradingBox(self, sourceDirectory, sourceFile, outputFile, gradingTextLabel):
         '''function that creates the instructor grading box.  This box is pre-polated with the student's name'''
         #extract the student name from the sourceFile name: remove the leading sourcedirectory
         #name and note that Moodle begins the submitted filename with the student's name followed
         #by an '_'
-        student_name = sourceFile.split(sourceDirectory)[1].split('_')[0].strip('/')
+        #student_name = sourceFile.split(sourceDirectory)[1].split('_')[0].strip('/')
+        student_name = self._getStudentName(sourceDirectory, sourceFile)
         f=self.openFile(outputFile, "a")    #open for appending
         f.write ('<font face="courier" color="' + AutoGrader.Const.FEEDBACK_COLOR + '">')
         f.write('<br>Instructor Feedback for '+student_name+'</font><br><textarea name="'+gradingTextLabel+'" rows=4 cols=80>'+student_name+'\nGrade: \nComments: </textarea><br><br>')
@@ -601,7 +633,7 @@ class AutoGrader:
                     print("Compilation succeeded.")
                     self._reportErrorMsg("Compilation succeeded.<br>", outputFile)                    
                     if len(testDataFiles) == 0:     #no input data required
-                        exec_time = self._shellExec('"'+exeFile+'"', '', '', outputFile, maxRunTime, maxOutputLines)
+                        exec_time = self._shellExec('"'+exeFile+'"', '', '', outputFile, maxRunTime, maxOutputLines, sourceDirectory)
                         print (format("%0.4f" % exec_time) + " secs.")
                     else:
                         for dataFile in testDataFiles:
@@ -611,7 +643,7 @@ class AutoGrader:
                             #programs that don't end.  Ultimately, we will want to use a fork()/wait() pair and be able to set a max run time.
                             _, filename =  os.path.split(dataFile)
                             print ("processing '" + filename + "'...")
-                            exec_time = self._shellExec('"'+exeFile+'"', '', dataFile, outputFile, maxRunTime, maxOutputLines)
+                            exec_time = self._shellExec('"'+exeFile+'"', '', dataFile, outputFile, maxRunTime, maxOutputLines, sourceDirectory)
 
                             print (format("%0.4f" % exec_time) + " secs.")
                             self._reportExecTime(exec_time, outputFile)
@@ -700,7 +732,7 @@ class AutoGrader:
 
 
                 if len(testDataFiles) == 0:     #no input data required
-                    exec_time = self._shellExec('"'+interpreter+'"', topLevelModule, '', outputFile, maxRunTime, maxOutputLines)
+                    exec_time = self._shellExec('"'+interpreter+'"', topLevelModule, '', outputFile, maxRunTime, maxOutputLines, sourceDirectory)
                     print (format("%0.4f" % exec_time) + " secs.")
                     self._reportExecTime(exec_time, outputFile)
                 else:
@@ -711,7 +743,7 @@ class AutoGrader:
                         #programs that don't end.  Ultimately, we will want to use a fork()/wait() pair and be able to set a max run time.
                         _, filename =  os.path.split(dataFile)
                         print ("processing '" + filename + "'...")
-                        exec_time = self._shellExec('"'+interpreter+'"', topLevelModule, dataFile, outputFile, maxRunTime, maxOutputLines)
+                        exec_time = self._shellExec('"'+interpreter+'"', topLevelModule, dataFile, outputFile, maxRunTime, maxOutputLines, sourceDirectory)
 
                         print (format("%0.4f" % exec_time) + " secs.")
                         self._reportExecTime(exec_time, outputFile)

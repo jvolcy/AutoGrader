@@ -54,13 +54,6 @@ To Do: -
 #Need to allow user to specify browers or use default
 #Need to read feedback file back into HTML page when available
 
-#Need to preserve files created by the program.  Here is a strategy:
-#1) When the program starts, make a list of all files in the program directory
-#2) Create a sub-directory for each program using the user's name
-#3) When the program ends, make a new list of all files in the proram directory
-#4) If this second list contains files not in the first list, move them to the sub-directory created in step 2
-#5) Do an 'rmdir' on the created directory.  If the directory is empty, it will be removed.  Otherwise, a 'directory not empty' error will be generated which can be ignored.
-
 """
 
 
