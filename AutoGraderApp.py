@@ -395,7 +395,7 @@ class Application:
 
         
         Label(self.MainTab, text="Max Run Time (secs)", font=("Helvetica", 14)).grid(row=9, column=2, columnspan=2, padx=5, sticky=E)
-        self.MaxRunSpinBox = Spinbox(self.MainTab, from_=1, to=600, width=10)
+        self.MaxRunSpinBox = Spinbox(self.MainTab, from_=0, to=600, width=10)
         self.MaxRunSpinBox.grid(row=9, column=4, columnspan=2)
         self.MaxRunSpinBox.delete(0, END)
         self.MaxRunSpinBox.insert(0, str(self.ag_options['max_run_time']))

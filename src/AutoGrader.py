@@ -240,6 +240,10 @@ class AutoGrader:
         #Add a 2>&1 to the command line so that stderr (2) is redirected to stdout (1)
         #stdin(0) is redirected from dataFile; stdout(1) is redirected to outputFile
         #stderr(2) is redicted to stdout(1), which is itself redirected to outputFile
+
+        #print("xxxxxxx", sourceFile)
+        #print("xxxxxxx", topLevelDirectory)
+        #print("xxxxxxx", dataFile)
         
         f=self.openFile(outputFile, "a")    #open for appending
         #Delineate the start of the unformatted py code output with a token: PROG_OUTPUT_START_TOKEN.
@@ -271,11 +275,15 @@ class AutoGrader:
 
         start_time = time.time()
         p = subprocess.Popen(args=_args, shell=True, cwd=cwd)    #the pid returned appears to be the pid of the shell
-        elapsed_time = time.time() - start_time
-        
-        while p.poll() == None and elapsed_time < maxRunTime:
+
+        if maxRunTime > 0:
             elapsed_time = time.time() - start_time
-            print ("*", end='')
+            while p.poll() == None and elapsed_time < maxRunTime:
+                elapsed_time = time.time() - start_time
+                print ("*", end='')
+        else:   #user specified 0 or a negative value for the max run time --> wait indefinitely
+            p.wait()    #wait indefinitely for process to terminate
+            elapsed_time = time.time() - start_time
             
         #copy the first maxOutputLines from the temp file to the output file
         #Also, limit the # bytes to 40*maxOutputLines (this avoids large output files due to ridiculously long lines)
@@ -283,7 +291,7 @@ class AutoGrader:
         self._removeFile(tmpFile)
 
         #kill the process, if it has exceeded its max run time
-        if elapsed_time >= maxRunTime:
+        if elapsed_time >= maxRunTime and maxRunTime > 0:
             print ("Killing process {0}. Run time exceeds max value of {1} seconds.".format(p.pid, maxRunTime))
             p.terminate()       #try a s/w termination
             time.sleep(1)       #wait 1 second
@@ -322,15 +330,15 @@ class AutoGrader:
         finalFileList = os.listdir(cwd)
         #create an output directory
         outputDirectory = cwd + '/' + self._getStudentName(topLevelDirectory, sourceFile) + '_output'
-        print('\noutput directory = ', outputDirectory)
-        print (initialFileList)
-        print (finalFileList)
+        #print('\noutput directory = ', outputDirectory)
+        #print (initialFileList)
+        #print (finalFileList)
         os.system('mkdir "' + outputDirectory + '"')
         #move all new files to an output directory based on the student's name
         for file in finalFileList:
             if file not in initialFileList:
                 os.system('mv -f "' + cwd + '/' + file + '" "' + outputDirectory + '"')
-                print('moving file ', file)
+                print('output file ', file)
 
         #attempt to remove the output directory (will only succeed if the directory is empty
         os.system('rmdir "' + outputDirectory + '"')
@@ -342,6 +350,11 @@ class AutoGrader:
     def _getStudentName(self, sourceDirectory, sourceFile):
         '''function that attempts to extract the student name from the Moodle-generated student submission file'''
         #sourceDirectory is the top level directory.
+        if sourceFile == '':
+            return 'Anonymous'
+        
+        #print("*******>>>", sourceFile)
+        #print("*******>>>", sourceDirectory)
         filename = sourceFile.split(sourceDirectory)[1]
         if '_' not in filename:
             return 'Anonymous'
