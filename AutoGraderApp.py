@@ -5,7 +5,7 @@ if sys.version_info >= (3, 0):
     from tkinter import *
     import tkinter.ttk as ttk
     import tkinter.filedialog as tkFileDialog
-    #import tkinter.messagebox
+    import tkinter.messagebox as messagebox     #for 3.6
     import tkinter.scrolledtext as ScrolledText
 else:
     from Tkinter import *
@@ -21,7 +21,7 @@ from AutoGrader import AutoGrader
 import SpelmanLogo
 import json
 
-AUTO_GRADER_APP_VERSION = "0.98q"
+AUTO_GRADER_APP_VERSION = "0.98r"
 #requires AutoGrader V 0.94 or later
 
 
@@ -48,6 +48,7 @@ AUTO_GRADER_APP_VERSION = "0.98q"
 0.97 - save preferences added
 0.98p - javascript grade entry added
 0.98q - working directory set to directory of source file
+0.98r - added 'import tkinter.messagebox as messagebox', which seems to be required beginning with Python 3.6
 
 To Do: - 
 #Need to provide an option for manual entry instead of test data (which won't work for a gussing game, for example)
